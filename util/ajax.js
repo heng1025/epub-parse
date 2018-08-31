@@ -16,6 +16,8 @@ const fetch = url => {
     })
   } else {
     return window.fetch(url)
+      .then(response => response.text())
+      .then(str => str)
   }
 }
 
