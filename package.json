@@ -1,0 +1,19 @@
+{
+  "name": "epub-parse",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "epub",
+    "xml"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "resolve-pathname": "^2.2.0",
+    "x2js": "^3.2.1"
+  }
+}
