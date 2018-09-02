@@ -1,13 +1,17 @@
-### epub文件解析
-- 支持小程序和web
-- web端需要fetch支持
+### parse epub files(just epub xml,never .epub file)
+- support weixin mini miniprogram and web 
+- fetch is prereqire when it's browser client
 
-### 使用方法
-- 解析epub路径
+### How To Use
+- get epub Object infomation
 `parseEpubBook(epubUri).then(bkEpub => bkEpub)`
-- 获取每章内容
-`const { spine,manifest,packageDirectory } = kEpub;`
+- get chapter content by count
+`const { spine,manifest,packageDirectory } = bkEpub;`
 `loadEpubChapter(epubUri,packageDirectory,spine,manifest,spinePos) #spinePos表示章节序号`
 
+### parseEpubBook(epubUri: string):Promise
+`epubUri` the root path of epub file
+`Promise` which contains `packageDirectory`,`spine`,`manifest`
 
+### loadEpubChapter(epubUri: string)
 > 参考 https://github.com/dariocravero/parse-epub.git

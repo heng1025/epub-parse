@@ -1,8 +1,9 @@
 {
-  "name": "epub-parse",
-  "version": "0.0.1",
+  "name": "@heng1025/epub-parse",
+  "version": "0.0.2",
   "description": "",
   "main": "index.js",
+  "homepage": "https://github.com/heng1025/epub-parse.git",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
