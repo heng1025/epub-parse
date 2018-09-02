@@ -10,7 +10,7 @@
     "epub",
     "xml"
   ],
-  "author": "",
+  "author": "heng1025",
   "license": "MIT",
   "dependencies": {
     "resolve-pathname": "^2.2.0",
