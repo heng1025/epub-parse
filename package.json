@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "description": "",
   "main": "index.js",
-  "homepage": "https://github.com/heng1025/epub-parse.git",
+  "homepage": "https://github.com/heng1025/epub-parse",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
