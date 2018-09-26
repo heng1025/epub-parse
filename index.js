@@ -98,11 +98,11 @@ function loadEpubChapter(rootURL, packageDirectory, spine, manifest, chapterCoun
     // add class property
     chapterContent = chapterContent
       .replace(/\<a/g, '<a class="bk-epub-href"')
-      .replace(/\<img/g, '<img class="bk-epub-img"')
-      .replace(/\<p/g, '<p class="bk-epub-txt"')
+      .replace(/<img.*?src=(('|")[^'|"]*\.(jpg|png|gif|bmg|jpeg)\2)[^>]*>/ig, '<img class="bk-epub-img" src=$1/>')
       .replace(/<(h\d)(.*)>(.*)(<\/\1>)/g, '<h3 class="bk-epub-title">$3</h3>')
       .replace(/\<body/g, '<div class="bk-epub-wrap"')
-      .replace(/\<\/body>/g, '<p>~本章完~</p></div>');
+      .replace(/\<\/body>/g, '<p>~本章完~</p></div>')
+      .replace(/<p[^>]*>(.*?)<\/p>/gm, '<p class="bk-epub-txt">$1</p>')
 
     return chapterContent;
   })
