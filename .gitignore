@@ -1,7 +1,5 @@
 .DS_Store
 node_modules/
-miniprogram_npm/
-/dist/
 npm-debug.log*
 /test/unit/coverage
 /test/e2e/reports
