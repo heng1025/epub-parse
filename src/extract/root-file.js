@@ -1,9 +1,4 @@
-import {
-  getExtension
-} from '../util/path-helpers';
-
-const ROOT_FILE = 'rootfile';
-const FULL_PATH = 'full-path';
+import { getExtension } from '../util/path-helpers';
 
 export default function rootFile(xml) {
   const packageDocumentPath = xml.container.rootfiles.rootfile['full-path'];

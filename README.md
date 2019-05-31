@@ -7,7 +7,7 @@
 `parseEpubBook(epubUri).then(bkEpub => bkEpub)`
 - get chapter content by count
 `const { spine,manifest,packageDirectory } = bkEpub;`
-`loadEpubChapter(epubUri,packageDirectory,spine,manifest,spinePos) #spinePos表示章节序号`
+`loadEpubChapter(epubUri,packageDirectory,spine,manifest,spinePos) #spinePos (represent chapter no.)`
 
 ### parseEpubBook(epubUri: string):Promise
 `epubUri` the root path of epub file

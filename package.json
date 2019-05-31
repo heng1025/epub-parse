@@ -3,8 +3,10 @@
   "version": "0.0.4",
   "description": "",
   "main": "index.js",
+  "miniprogram": "dist",
   "homepage": "https://github.com/heng1025/epub-parse",
   "scripts": {
+    "build": "rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -16,5 +18,14 @@
   "dependencies": {
     "resolve-pathname": "^2.2.0",
     "x2js": "^3.2.1"
+  },
+  "prettier": {
+    "trailingComma": "all",
+    "singleQuote": true
+  },
+  "devDependencies": {
+    "rollup": "^1.13.0",
+    "rollup-plugin-commonjs": "^10.0.0",
+    "rollup-plugin-node-resolve": "^5.0.1"
   }
 }
