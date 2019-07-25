@@ -1,6 +1,6 @@
 {
   "name": "@heng1025/epub-parse",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "",
   "main": "dist/index.cjs.min.js",
   "miniprogram": "dist/index.cjs.min.js",

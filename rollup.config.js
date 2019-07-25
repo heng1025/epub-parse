@@ -5,11 +5,11 @@ export default {
   input: 'src/index.js',
   output: [
     {
-      file: 'dist/index.cjs.min.js',
+      file: 'dist/index.cjs.js',
       format: 'cjs',
     },
     {
-      file: 'dist/index.umd.min.js',
+      file: 'dist/index.umd.js',
       name: 'Epub',
       format: 'umd',
     },
