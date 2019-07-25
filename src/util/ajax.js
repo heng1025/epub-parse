@@ -1,5 +1,5 @@
 const fetch = url => {
-  if (wx.request) {
+  if (window.wx && wx.request) {
     return new Promise((resolve, reject) => {
       wx.request({
         url,
@@ -7,10 +7,10 @@ const fetch = url => {
           resolve(res.data);
         },
         fail() {
-          reject("请求失败~");
+          reject('请求失败~');
         },
         error(e) {
-          reject("请求出错了~");
+          reject('请求出错了~');
         },
       });
     });

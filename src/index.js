@@ -1,3 +1,4 @@
+import XmlParser from 'x2js';
 import resolvePathname from 'resolve-pathname';
 import extractManifest from './extract/manifest';
 import extractMetadata from './extract/metadata';
@@ -13,6 +14,9 @@ import {
   tocHtml as fetchTocHtml,
 } from './util/xml-request';
 
+const domParser = new XmlParser({
+  attributePrefix: '',
+});
 /**
  * 解析 .opf文件
  *
@@ -112,7 +116,7 @@ function loadEpubChapter(
         const re = new RegExp('&' + key + ';', 'g');
         chapterContent = chapterContent.replace(re, entityMap[key]);
       }
-
+    
       // add class property
       chapterContent = chapterContent
         .replace(/\<a/g, '<a class="bk-epub-href"')
@@ -121,13 +125,13 @@ function loadEpubChapter(
           '<img class="bk-epub-img" src=$1/>',
         )
         .replace(
-          /<(h\d)(.*)>(.*)(<\/\1>)/g,
-          '<h3 class="bk-epub-title">$3</h3>',
+          /<(h\d)[^>](.*?)>(.*?)<\/\1>/gi,
+          '<h3 class="bk-epub-title" $2>$3</h3>',
         )
         .replace(/\<body/g, '<div class="bk-epub-wrap"')
         .replace(/\<\/body>/g, '<p>~本章完~</p></div>')
         .replace(/<p[^>]*>(.*?)<\/p>/gm, '<p class="bk-epub-txt">$1</p>');
-
+              
       return chapterContent;
     },
   );
