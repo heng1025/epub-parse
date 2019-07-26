@@ -1,6 +1,6 @@
 ### parse epub files(just epub xml,never .epub file)
 
-### install
+### Install
 
 ```
 npm install https://github.com/heng1025/epub-parse.git
@@ -8,26 +8,20 @@ npm install https://github.com/heng1025/epub-parse.git
 
 ### How To Use
 
-1. node or miniprogram
+1.weixin miniprogram
 
 ```
-import { parseEpubBook, loadEpubChapter } from '@heng1025/epub-parse';
+import { parseEpubBook, loadEpubChapter, Epub } from '@heng1025/epub-parse';
 ```
 
 2. browser
 
-```
+```HTML
 <script src="../dist/index.umd.min.js"></script>
 <script>
 // ...global Epub
 const {spine, manifest,packageDirectory,toc} = await Epub.parseEpubBook(epubUri);
-let chapterContent = await Epub.loadEpubChapter(
-    epubUri,
-    packageDirectory,
-    spine,
-    manifest,
-    chapterCount,
-);
+let { rawTexts } = await Epub.loadEpubChapter(epub,chapterCount);
 // ...
 <script>
 ```
@@ -38,7 +32,7 @@ let chapterContent = await Epub.loadEpubChapter(
 
 ```typescript
 function parseEpubBook(
-  epubUri: string,
+  rootURL: string,
 ): Promise<{
   spine: Array<any>;
   manifest: Array<any>;
@@ -51,12 +45,9 @@ function parseEpubBook(
 
 ```typescript
 export function loadEpubChapter(
-  rootURL: string,
-  packageDirectory: string,
-  spine: Array<any>,
-  manifest: Array<any>,
+  epub: Epub,
   chapterCount: number,
-): Promise<string>;
+): Promise<{ rawText: string; formatTexts: string }>;
 ```
 
 | params  |          description           |

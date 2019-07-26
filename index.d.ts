@@ -27,7 +27,7 @@ export interface Toc {
   sublevels: Toc[];
 }
 
-interface Epub {
+export interface Epub {
   rootURL: string;
   toc: Array<Toc>;
   spine: Spine;
