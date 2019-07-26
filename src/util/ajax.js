@@ -18,7 +18,8 @@ const fetch = url => {
   return window
     .fetch(url)
     .then(response => response.text())
-    .then(str => str);
+    .then(str => str)
+    .catch(err => err);
 };
 
 export default fetch;
