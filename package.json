@@ -1,6 +1,6 @@
 {
   "name": "@heng1025/epub-parse",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "",
   "main": "dist/index.cjs.min.js",
   "miniprogram": "dist/index.cjs.min.js",
@@ -9,10 +9,8 @@
     "build": "rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [
-    "epub",
-    "xml"
-  ],
+  "files": ["dist/*.js", "index.d.ts"],
+  "keywords": ["epub", "xml"],
   "author": "heng1025",
   "license": "MIT",
   "dependencies": {

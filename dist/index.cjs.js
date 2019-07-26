@@ -3370,7 +3370,7 @@ function toc(tocHtml, manifest, spine) {
 }
 
 const fetch = url => {
-  if (window.wx && wx.request) {
+  if (!window && wx.request) {
     return new Promise((resolve, reject) => {
       wx.request({
         url,
@@ -3389,7 +3389,8 @@ const fetch = url => {
   return window
     .fetch(url)
     .then(response => response.text())
-    .then(str => str);
+    .then(str => str)
+    .catch(err => err);
 };
 
 const domParser$1 = new x2js({
@@ -3404,9 +3405,6 @@ const rootXml = (uri, source) => xml(`${uri}/${source}`);
 const tocHtml = (uri, source = TOC_HTML, path = OPS_DIRECTORY) => xml(`${uri}/${path}/${source}`);
 const chapterXml = (uri, source, path = OPS_DIRECTORY) => xml(`${uri}/${path}/${source}`, false);
 
-const domParser$2 = new x2js({
-  attributePrefix: '',
-});
 /**
  * 解析 .opf文件
  *
@@ -3503,7 +3501,7 @@ function loadEpubChapter(
         const re = new RegExp('&' + key + ';', 'g');
         chapterContent = chapterContent.replace(re, entityMap[key]);
       }
-    
+
       // add class property
       chapterContent = chapterContent
         .replace(/\<a/g, '<a class="bk-epub-href"')
@@ -3518,7 +3516,7 @@ function loadEpubChapter(
         .replace(/\<body/g, '<div class="bk-epub-wrap"')
         .replace(/\<\/body>/g, '<p>~本章完~</p></div>')
         .replace(/<p[^>]*>(.*?)<\/p>/gm, '<p class="bk-epub-txt">$1</p>');
-              
+
       return chapterContent;
     },
   );
