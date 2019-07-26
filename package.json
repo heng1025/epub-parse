@@ -2,8 +2,8 @@
   "name": "@heng1025/epub-parse",
   "version": "0.0.7",
   "description": "",
-  "main": "dist/index.cjs.min.js",
-  "miniprogram": "dist/index.cjs.min.js",
+  "main": "dist/index.cjs.js",
+  "miniprogram": "dist/index.cjs.js",
   "homepage": "https://github.com/heng1025/epub-parse",
   "scripts": {
     "build": "rollup -c",
