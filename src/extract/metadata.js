@@ -41,7 +41,7 @@ export default function metadata(parsedRootXml, manifest) {
     } catch (exception) {
       if (required) {
         ret[attr] = undefined;
-        console.error(`Can't get required attribute '${attr}' on metadata.`);
+        console.warn(`Can't get required attribute '${attr}' on metadata.`);
       }
     }
   }

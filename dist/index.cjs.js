@@ -2,6 +2,489 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
+function isAbsolute(pathname) {
+  return pathname.charAt(0) === '/';
+}
+
+// About 1.5x faster than the two-arg version of Array#splice()
+function spliceOne(list, index) {
+  for (var i = index, k = i + 1, n = list.length; k < n; i += 1, k += 1) {
+    list[i] = list[k];
+  }
+
+  list.pop();
+}
+
+// This implementation is based heavily on node's url.parse
+function resolvePathname(to) {
+  var from = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+  var toParts = to && to.split('/') || [];
+  var fromParts = from && from.split('/') || [];
+
+  var isToAbs = to && isAbsolute(to);
+  var isFromAbs = from && isAbsolute(from);
+  var mustEndAbs = isToAbs || isFromAbs;
+
+  if (to && isAbsolute(to)) {
+    // to is absolute
+    fromParts = toParts;
+  } else if (toParts.length) {
+    // to is relative, drop the filename
+    fromParts.pop();
+    fromParts = fromParts.concat(toParts);
+  }
+
+  if (!fromParts.length) return '/';
+
+  var hasTrailingSlash = void 0;
+  if (fromParts.length) {
+    var last = fromParts[fromParts.length - 1];
+    hasTrailingSlash = last === '.' || last === '..' || last === '';
+  } else {
+    hasTrailingSlash = false;
+  }
+
+  var up = 0;
+  for (var i = fromParts.length; i >= 0; i--) {
+    var part = fromParts[i];
+
+    if (part === '.') {
+      spliceOne(fromParts, i);
+    } else if (part === '..') {
+      spliceOne(fromParts, i);
+      up++;
+    } else if (up) {
+      spliceOne(fromParts, i);
+      up--;
+    }
+  }
+
+  if (!mustEndAbs) for (; up--; up) {
+    fromParts.unshift('..');
+  }if (mustEndAbs && fromParts[0] !== '' && (!fromParts[0] || !isAbsolute(fromParts[0]))) fromParts.unshift('');
+
+  var result = fromParts.join('/');
+
+  if (hasTrailingSlash && result.substr(-1) !== '/') result += '/';
+
+  return result;
+}
+
+var entityMap = {
+  lt: '', // < 和 > 渲染会出错
+  gt: '',
+  amp: '&',
+  quot: '"',
+  apos: "'",
+  Agrave: "À",
+  Aacute: "Á",
+  Acirc: "Â",
+  Atilde: "Ã",
+  Auml: "Ä",
+  Aring: "Å",
+  AElig: "Æ",
+  Ccedil: "Ç",
+  Egrave: "È",
+  Eacute: "É",
+  Ecirc: "Ê",
+  Euml: "Ë",
+  Igrave: "Ì",
+  Iacute: "Í",
+  Icirc: "Î",
+  Iuml: "Ï",
+  ETH: "Ð",
+  Ntilde: "Ñ",
+  Ograve: "Ò",
+  Oacute: "Ó",
+  Ocirc: "Ô",
+  Otilde: "Õ",
+  Ouml: "Ö",
+  Oslash: "Ø",
+  Ugrave: "Ù",
+  Uacute: "Ú",
+  Ucirc: "Û",
+  Uuml: "Ü",
+  Yacute: "Ý",
+  THORN: "Þ",
+  szlig: "ß",
+  agrave: "à",
+  aacute: "á",
+  acirc: "â",
+  atilde: "ã",
+  auml: "ä",
+  aring: "å",
+  aelig: "æ",
+  ccedil: "ç",
+  egrave: "è",
+  eacute: "é",
+  ecirc: "ê",
+  euml: "ë",
+  igrave: "ì",
+  iacute: "í",
+  icirc: "î",
+  iuml: "ï",
+  eth: "ð",
+  ntilde: "ñ",
+  ograve: "ò",
+  oacute: "ó",
+  ocirc: "ô",
+  otilde: "õ",
+  ouml: "ö",
+  oslash: "ø",
+  ugrave: "ù",
+  uacute: "ú",
+  ucirc: "û",
+  uuml: "ü",
+  yacute: "ý",
+  thorn: "þ",
+  yuml: "ÿ",
+  nbsp: " ",
+  iexcl: "¡",
+  cent: "¢",
+  pound: "£",
+  curren: "¤",
+  yen: "¥",
+  brvbar: "¦",
+  sect: "§",
+  uml: "¨",
+  copy: "©",
+  ordf: "ª",
+  laquo: "«",
+  not: "¬",
+  shy: "­­",
+  reg: "®",
+  macr: "¯",
+  deg: "°",
+  plusmn: "±",
+  sup2: "²",
+  sup3: "³",
+  acute: "´",
+  micro: "µ",
+  para: "¶",
+  middot: "·",
+  cedil: "¸",
+  sup1: "¹",
+  ordm: "º",
+  raquo: "»",
+  frac14: "¼",
+  frac12: "½",
+  frac34: "¾",
+  iquest: "¿",
+  times: "×",
+  divide: "÷",
+  forall: "∀",
+  part: "∂",
+  exist: "∃",
+  empty: "∅",
+  nabla: "∇",
+  isin: "∈",
+  notin: "∉",
+  ni: "∋",
+  prod: "∏",
+  sum: "∑",
+  minus: "−",
+  lowast: "∗",
+  radic: "√",
+  prop: "∝",
+  infin: "∞",
+  ang: "∠",
+  and: "∧",
+  or: "∨",
+  cap: "∩",
+  cup: "∪",
+  'int': "∫",
+  there4: "∴",
+  sim: "∼",
+  cong: "≅",
+  asymp: "≈",
+  ne: "≠",
+  equiv: "≡",
+  le: "≤",
+  ge: "≥",
+  sub: "⊂",
+  sup: "⊃",
+  nsub: "⊄",
+  sube: "⊆",
+  supe: "⊇",
+  oplus: "⊕",
+  otimes: "⊗",
+  perp: "⊥",
+  sdot: "⋅",
+  Alpha: "Α",
+  Beta: "Β",
+  Gamma: "Γ",
+  Delta: "Δ",
+  Epsilon: "Ε",
+  Zeta: "Ζ",
+  Eta: "Η",
+  Theta: "Θ",
+  Iota: "Ι",
+  Kappa: "Κ",
+  Lambda: "Λ",
+  Mu: "Μ",
+  Nu: "Ν",
+  Xi: "Ξ",
+  Omicron: "Ο",
+  Pi: "Π",
+  Rho: "Ρ",
+  Sigma: "Σ",
+  Tau: "Τ",
+  Upsilon: "Υ",
+  Phi: "Φ",
+  Chi: "Χ",
+  Psi: "Ψ",
+  Omega: "Ω",
+  alpha: "α",
+  beta: "β",
+  gamma: "γ",
+  delta: "δ",
+  epsilon: "ε",
+  zeta: "ζ",
+  eta: "η",
+  theta: "θ",
+  iota: "ι",
+  kappa: "κ",
+  lambda: "λ",
+  mu: "μ",
+  nu: "ν",
+  xi: "ξ",
+  omicron: "ο",
+  pi: "π",
+  rho: "ρ",
+  sigmaf: "ς",
+  sigma: "σ",
+  tau: "τ",
+  upsilon: "υ",
+  phi: "φ",
+  chi: "χ",
+  psi: "ψ",
+  omega: "ω",
+  thetasym: "ϑ",
+  upsih: "ϒ",
+  piv: "ϖ",
+  OElig: "Œ",
+  oelig: "œ",
+  Scaron: "Š",
+  scaron: "š",
+  Yuml: "Ÿ",
+  fnof: "ƒ",
+  circ: "ˆ",
+  tilde: "˜",
+  ensp: " ",
+  emsp: " ",
+  thinsp: " ",
+  zwnj: "‌",
+  zwj: "‍",
+  lrm: "‎",
+  rlm: "‏",
+  ndash: "–",
+  mdash: "—",
+  lsquo: "‘",
+  rsquo: "’",
+  sbquo: "‚",
+  ldquo: "“",
+  rdquo: "”",
+  bdquo: "„",
+  dagger: "†",
+  Dagger: "‡",
+  bull: "•",
+  hellip: "…",
+  permil: "‰",
+  prime: "′",
+  Prime: "″",
+  lsaquo: "‹",
+  rsaquo: "›",
+  oline: "‾",
+  euro: "€",
+  trade: "™",
+  larr: "←",
+  uarr: "↑",
+  rarr: "→",
+  darr: "↓",
+  harr: "↔",
+  crarr: "↵",
+  lceil: "⌈",
+  rceil: "⌉",
+  lfloor: "⌊",
+  rfloor: "⌋",
+  loz: "◊",
+  spades: "♠",
+  clubs: "♣",
+  hearts: "♥",
+  diams: "♦",
+  '#8226': '•'
+};
+
+/* eslint-env es6 */
+
+// Split a filename into [root, dir, basename, ext], unix version
+// 'root' is just a slash, or nothing.
+const splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+const splitPath = filename => splitPathRe.exec(filename).slice(1);
+
+const getDirname = path => {
+  const result = splitPath(path);
+  const root = result[0];
+  let dir = result[1];
+  if (!root && !dir) {
+    // No dirname whatsoever
+    return '.';
+  }
+
+  if (dir) {
+    // It has a dirname, strip trailing slash
+    dir = dir.substr(0, dir.length - 1);
+  }
+  return root + dir;
+};
+const getExtension = path => splitPath(path)[3];
+
+function rootFile(xml) {
+  const packageDocumentPath = xml.container.rootfiles.rootfile['full-path'];
+  if (getExtension(packageDocumentPath) === '.opf') {
+    return packageDocumentPath;
+  }
+  throw new Error('no .opf file could be found in META-INF/container.xml');
+}
+
+function normalise(list) {
+  const byId = {};
+  const items = list.map(item => {
+    byId[item.id] = item;
+    return item.id;
+  });
+
+  return {
+    byId,
+    items,
+  };
+}
+
+// mainfest确定文件的路径
+
+function manifest(xml) {
+  const items = xml.package.manifest.item;
+  return normalise(
+    items.map(({ href, id, 'media-type': mediaType }) => ({
+      href,
+      id,
+      mediaType,
+    })),
+  );
+}
+
+/* eslint {no-underscore-dangle: 0, indent: 0} */
+
+const ATTRIBUTES = {
+  OPTIONAL: [
+    'creator',
+    'contributor',
+    'coverage',
+    'creator',
+    'date',
+    'description',
+    'format',
+    'publisher',
+    'relation',
+    'rights',
+    'source',
+    'subject',
+    'type',
+  ],
+  REQUIRED: ['identifier', 'language', 'title'],
+};
+
+function metadata(parsedRootXml, manifest) {
+  const ret = {};
+  const metadataInfo = parsedRootXml.package.metadata;
+  const uniqueIdentifierId = parsedRootXml.package['unique-identifier'];
+
+  function attribute(attr, required) {
+    try {
+      const attrInfo = metadataInfo[attr];
+      if (Array.isArray(attrInfo)) {
+        if (attr === 'identifier') {
+          ret[attr] = attrInfo.find(
+            attrItem => attrItem.id === uniqueIdentifierId,
+          ).__text;
+        } else {
+          ret[attr] = attrInfo.map(attrItem => attrItem.__text);
+        }
+      } else {
+        ret[attr] = attrInfo.__text;
+      }
+    } catch (exception) {
+      if (required) {
+        ret[attr] = undefined;
+        console.warn(`Can't get required attribute '${attr}' on metadata.`);
+      }
+    }
+  }
+  ATTRIBUTES.OPTIONAL.forEach(attr => attribute(attr, false));
+  ATTRIBUTES.REQUIRED.forEach(attr => attribute(attr, true));
+  return ret;
+}
+
+// spin确定文件顺序
+
+function spine(xml) {
+  const items = Array.isArray(xml.package.spine.itemref)
+    ? xml.package.spine.itemref
+    : [xml.package.spine.itemref];
+
+  const spineProp = normalise(
+    items.map(({ idref: id }) => ({
+      id,
+    })),
+  );
+  return spineProp;
+}
+
+function toc(tocHtml, manifest, spine) {
+  let tocList = [];
+  const tocItem = {
+    sublevels: [],
+    id: '',
+    isLeaf: false,
+    href: '',
+    tocIndex: 0,
+    name: '',
+  };
+  parse(tocItem, tocHtml.ncx.navMap.navPoint);
+  tocList = tocItem.sublevels;
+
+  function parse(parent, childNode) {
+    const childNodeList = Array.isArray(childNode) ? childNode : [childNode];
+    childNodeList.forEach(val => {
+      const hrefWithoutHash = val.content.src && val.content.src.split('#')[0];
+      const manifestId = manifest.items.find(
+        itemId => manifest.byId[itemId].href === hrefWithoutHash,
+      );
+      const tocIndex = spine.items.findIndex(itemId => itemId === manifestId);
+      let tocName = val.navLabel.text;
+      for (let key in entityMap) {
+        const re = new RegExp('&' + key + ';', 'g');
+        tocName = tocName.replace(re, entityMap[key]);
+      }
+      const child = {
+        sublevels: [],
+        id: val.id,
+        isLeaf: false,
+        href: val.content.src,
+        tocIndex,
+        name: tocName,
+      };
+      parent.isLeaf = true;
+      parent.sublevels.push(child);
+      if (val.navPoint) {
+        parse(child, val.navPoint);
+      }
+    });
+  }
+  return tocList;
+}
+
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 function createCommonjsModule(fn, module) {
@@ -2886,489 +3369,6 @@ var x2js = createCommonjsModule(function (module) {
 });
 });
 
-function isAbsolute(pathname) {
-  return pathname.charAt(0) === '/';
-}
-
-// About 1.5x faster than the two-arg version of Array#splice()
-function spliceOne(list, index) {
-  for (var i = index, k = i + 1, n = list.length; k < n; i += 1, k += 1) {
-    list[i] = list[k];
-  }
-
-  list.pop();
-}
-
-// This implementation is based heavily on node's url.parse
-function resolvePathname(to) {
-  var from = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
-
-  var toParts = to && to.split('/') || [];
-  var fromParts = from && from.split('/') || [];
-
-  var isToAbs = to && isAbsolute(to);
-  var isFromAbs = from && isAbsolute(from);
-  var mustEndAbs = isToAbs || isFromAbs;
-
-  if (to && isAbsolute(to)) {
-    // to is absolute
-    fromParts = toParts;
-  } else if (toParts.length) {
-    // to is relative, drop the filename
-    fromParts.pop();
-    fromParts = fromParts.concat(toParts);
-  }
-
-  if (!fromParts.length) return '/';
-
-  var hasTrailingSlash = void 0;
-  if (fromParts.length) {
-    var last = fromParts[fromParts.length - 1];
-    hasTrailingSlash = last === '.' || last === '..' || last === '';
-  } else {
-    hasTrailingSlash = false;
-  }
-
-  var up = 0;
-  for (var i = fromParts.length; i >= 0; i--) {
-    var part = fromParts[i];
-
-    if (part === '.') {
-      spliceOne(fromParts, i);
-    } else if (part === '..') {
-      spliceOne(fromParts, i);
-      up++;
-    } else if (up) {
-      spliceOne(fromParts, i);
-      up--;
-    }
-  }
-
-  if (!mustEndAbs) for (; up--; up) {
-    fromParts.unshift('..');
-  }if (mustEndAbs && fromParts[0] !== '' && (!fromParts[0] || !isAbsolute(fromParts[0]))) fromParts.unshift('');
-
-  var result = fromParts.join('/');
-
-  if (hasTrailingSlash && result.substr(-1) !== '/') result += '/';
-
-  return result;
-}
-
-function normalise(list) {
-  const byId = {};
-  const items = list.map(item => {
-    byId[item.id] = item;
-    return item.id;
-  });
-
-  return {
-    byId,
-    items,
-  };
-}
-
-// mainfest确定文件的路径
-
-function manifest(xml) {
-  const items = xml.package.manifest.item;
-  return normalise(
-    items.map(({ href, id, 'media-type': mediaType }) => ({
-      href,
-      id,
-      mediaType,
-    })),
-  );
-}
-
-/* eslint {no-underscore-dangle: 0, indent: 0} */
-
-const ATTRIBUTES = {
-  OPTIONAL: [
-    'creator',
-    'contributor',
-    'coverage',
-    'creator',
-    'date',
-    'description',
-    'format',
-    'publisher',
-    'relation',
-    'rights',
-    'source',
-    'subject',
-    'type',
-  ],
-  REQUIRED: ['identifier', 'language', 'title'],
-};
-
-function metadata(parsedRootXml, manifest) {
-  const ret = {};
-  const metadataInfo = parsedRootXml.package.metadata;
-  const uniqueIdentifierId = parsedRootXml.package['unique-identifier'];
-
-  function attribute(attr, required) {
-    try {
-      const attrInfo = metadataInfo[attr];
-      if (Array.isArray(attrInfo)) {
-        if (attr === 'identifier') {
-          ret[attr] = attrInfo.find(
-            attrItem => attrItem.id === uniqueIdentifierId,
-          ).__text;
-        } else {
-          ret[attr] = attrInfo.map(attrItem => attrItem.__text);
-        }
-      } else {
-        ret[attr] = attrInfo.__text;
-      }
-    } catch (exception) {
-      if (required) {
-        ret[attr] = undefined;
-        console.error(`Can't get required attribute '${attr}' on metadata.`);
-      }
-    }
-  }
-  ATTRIBUTES.OPTIONAL.forEach(attr => attribute(attr, false));
-  ATTRIBUTES.REQUIRED.forEach(attr => attribute(attr, true));
-  return ret;
-}
-
-/* eslint-env es6 */
-
-// Split a filename into [root, dir, basename, ext], unix version
-// 'root' is just a slash, or nothing.
-const splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
-const splitPath = filename => splitPathRe.exec(filename).slice(1);
-
-const getDirname = path => {
-  const result = splitPath(path);
-  const root = result[0];
-  let dir = result[1];
-  if (!root && !dir) {
-    // No dirname whatsoever
-    return '.';
-  }
-
-  if (dir) {
-    // It has a dirname, strip trailing slash
-    dir = dir.substr(0, dir.length - 1);
-  }
-  return root + dir;
-};
-const getExtension = path => splitPath(path)[3];
-
-function rootFile(xml) {
-  const packageDocumentPath = xml.container.rootfiles.rootfile['full-path'];
-  if (getExtension(packageDocumentPath) === '.opf') {
-    return packageDocumentPath;
-  }
-  throw new Error('no .opf file could be found in META-INF/container.xml');
-}
-
-// spin确定文件顺序
-
-function spine(xml) {
-  const items = Array.isArray(xml.package.spine.itemref)
-    ? xml.package.spine.itemref
-    : [xml.package.spine.itemref];
-
-  const spineProp = normalise(
-    items.map(({ idref: id }) => ({
-      id,
-    })),
-  );
-  return spineProp;
-}
-
-var entityMap = {
-  lt: '', // < 和 > 渲染会出错
-  gt: '',
-  amp: '&',
-  quot: '"',
-  apos: "'",
-  Agrave: "À",
-  Aacute: "Á",
-  Acirc: "Â",
-  Atilde: "Ã",
-  Auml: "Ä",
-  Aring: "Å",
-  AElig: "Æ",
-  Ccedil: "Ç",
-  Egrave: "È",
-  Eacute: "É",
-  Ecirc: "Ê",
-  Euml: "Ë",
-  Igrave: "Ì",
-  Iacute: "Í",
-  Icirc: "Î",
-  Iuml: "Ï",
-  ETH: "Ð",
-  Ntilde: "Ñ",
-  Ograve: "Ò",
-  Oacute: "Ó",
-  Ocirc: "Ô",
-  Otilde: "Õ",
-  Ouml: "Ö",
-  Oslash: "Ø",
-  Ugrave: "Ù",
-  Uacute: "Ú",
-  Ucirc: "Û",
-  Uuml: "Ü",
-  Yacute: "Ý",
-  THORN: "Þ",
-  szlig: "ß",
-  agrave: "à",
-  aacute: "á",
-  acirc: "â",
-  atilde: "ã",
-  auml: "ä",
-  aring: "å",
-  aelig: "æ",
-  ccedil: "ç",
-  egrave: "è",
-  eacute: "é",
-  ecirc: "ê",
-  euml: "ë",
-  igrave: "ì",
-  iacute: "í",
-  icirc: "î",
-  iuml: "ï",
-  eth: "ð",
-  ntilde: "ñ",
-  ograve: "ò",
-  oacute: "ó",
-  ocirc: "ô",
-  otilde: "õ",
-  ouml: "ö",
-  oslash: "ø",
-  ugrave: "ù",
-  uacute: "ú",
-  ucirc: "û",
-  uuml: "ü",
-  yacute: "ý",
-  thorn: "þ",
-  yuml: "ÿ",
-  nbsp: " ",
-  iexcl: "¡",
-  cent: "¢",
-  pound: "£",
-  curren: "¤",
-  yen: "¥",
-  brvbar: "¦",
-  sect: "§",
-  uml: "¨",
-  copy: "©",
-  ordf: "ª",
-  laquo: "«",
-  not: "¬",
-  shy: "­­",
-  reg: "®",
-  macr: "¯",
-  deg: "°",
-  plusmn: "±",
-  sup2: "²",
-  sup3: "³",
-  acute: "´",
-  micro: "µ",
-  para: "¶",
-  middot: "·",
-  cedil: "¸",
-  sup1: "¹",
-  ordm: "º",
-  raquo: "»",
-  frac14: "¼",
-  frac12: "½",
-  frac34: "¾",
-  iquest: "¿",
-  times: "×",
-  divide: "÷",
-  forall: "∀",
-  part: "∂",
-  exist: "∃",
-  empty: "∅",
-  nabla: "∇",
-  isin: "∈",
-  notin: "∉",
-  ni: "∋",
-  prod: "∏",
-  sum: "∑",
-  minus: "−",
-  lowast: "∗",
-  radic: "√",
-  prop: "∝",
-  infin: "∞",
-  ang: "∠",
-  and: "∧",
-  or: "∨",
-  cap: "∩",
-  cup: "∪",
-  'int': "∫",
-  there4: "∴",
-  sim: "∼",
-  cong: "≅",
-  asymp: "≈",
-  ne: "≠",
-  equiv: "≡",
-  le: "≤",
-  ge: "≥",
-  sub: "⊂",
-  sup: "⊃",
-  nsub: "⊄",
-  sube: "⊆",
-  supe: "⊇",
-  oplus: "⊕",
-  otimes: "⊗",
-  perp: "⊥",
-  sdot: "⋅",
-  Alpha: "Α",
-  Beta: "Β",
-  Gamma: "Γ",
-  Delta: "Δ",
-  Epsilon: "Ε",
-  Zeta: "Ζ",
-  Eta: "Η",
-  Theta: "Θ",
-  Iota: "Ι",
-  Kappa: "Κ",
-  Lambda: "Λ",
-  Mu: "Μ",
-  Nu: "Ν",
-  Xi: "Ξ",
-  Omicron: "Ο",
-  Pi: "Π",
-  Rho: "Ρ",
-  Sigma: "Σ",
-  Tau: "Τ",
-  Upsilon: "Υ",
-  Phi: "Φ",
-  Chi: "Χ",
-  Psi: "Ψ",
-  Omega: "Ω",
-  alpha: "α",
-  beta: "β",
-  gamma: "γ",
-  delta: "δ",
-  epsilon: "ε",
-  zeta: "ζ",
-  eta: "η",
-  theta: "θ",
-  iota: "ι",
-  kappa: "κ",
-  lambda: "λ",
-  mu: "μ",
-  nu: "ν",
-  xi: "ξ",
-  omicron: "ο",
-  pi: "π",
-  rho: "ρ",
-  sigmaf: "ς",
-  sigma: "σ",
-  tau: "τ",
-  upsilon: "υ",
-  phi: "φ",
-  chi: "χ",
-  psi: "ψ",
-  omega: "ω",
-  thetasym: "ϑ",
-  upsih: "ϒ",
-  piv: "ϖ",
-  OElig: "Œ",
-  oelig: "œ",
-  Scaron: "Š",
-  scaron: "š",
-  Yuml: "Ÿ",
-  fnof: "ƒ",
-  circ: "ˆ",
-  tilde: "˜",
-  ensp: " ",
-  emsp: " ",
-  thinsp: " ",
-  zwnj: "‌",
-  zwj: "‍",
-  lrm: "‎",
-  rlm: "‏",
-  ndash: "–",
-  mdash: "—",
-  lsquo: "‘",
-  rsquo: "’",
-  sbquo: "‚",
-  ldquo: "“",
-  rdquo: "”",
-  bdquo: "„",
-  dagger: "†",
-  Dagger: "‡",
-  bull: "•",
-  hellip: "…",
-  permil: "‰",
-  prime: "′",
-  Prime: "″",
-  lsaquo: "‹",
-  rsaquo: "›",
-  oline: "‾",
-  euro: "€",
-  trade: "™",
-  larr: "←",
-  uarr: "↑",
-  rarr: "→",
-  darr: "↓",
-  harr: "↔",
-  crarr: "↵",
-  lceil: "⌈",
-  rceil: "⌉",
-  lfloor: "⌊",
-  rfloor: "⌋",
-  loz: "◊",
-  spades: "♠",
-  clubs: "♣",
-  hearts: "♥",
-  diams: "♦",
-  '#8226': '•'
-};
-
-function toc(tocHtml, manifest, spine) {
-  let tocList = [];
-  const tocItem = {
-    sublevels: [],
-    id: '',
-    isLeaf: false,
-    href: '',
-    tocIndex: 0,
-    name: '',
-  };
-  parse(tocItem, tocHtml.ncx.navMap.navPoint);
-  tocList = tocItem.sublevels;
-
-  function parse(parent, childNode) {
-    const childNodeList = Array.isArray(childNode) ? childNode : [childNode];
-    childNodeList.forEach(val => {
-      const hrefWithoutHash = val.content.src && val.content.src.split('#')[0];
-      const manifestId = manifest.items.find(
-        itemId => manifest.byId[itemId].href === hrefWithoutHash,
-      );
-      const tocIndex = spine.items.findIndex(itemId => itemId === manifestId);
-      let tocName = val.navLabel.text;
-      for (let key in entityMap) {
-        const re = new RegExp('&' + key + ';', 'g');
-        tocName = tocName.replace(re, entityMap[key]);
-      }
-      const child = {
-        sublevels: [],
-        id: val.id,
-        isLeaf: false,
-        href: val.content.src,
-        tocIndex,
-        name: tocName,
-      };
-      parent.isLeaf = true;
-      parent.sublevels.push(child);
-      if (val.navPoint) {
-        parse(child, val.navPoint);
-      }
-    });
-  }
-  return tocList;
-}
-
 const fetch = url => {
   if (!window && wx.request) {
     return new Promise((resolve, reject) => {
@@ -3408,16 +3408,16 @@ const chapterXml = (uri, source, path = OPS_DIRECTORY) => xml(`${uri}/${path}/${
 /**
  * 解析 .opf文件
  *
- * @params {String} uri contain.xml的根路径
+ * @params {String} rootURL contain.xml的根路径
  * @returns {Promise}
  */
-function parseEpubBook(uri) {
+function parseEpubBook(rootURL) {
   let packageDirectory;
-  return containerXml(uri)
+  return containerXml(rootURL)
     .then(containerXml => rootFile(containerXml))
     .then(rootFile => {
       packageDirectory = getDirname(rootFile);
-      return rootXml(uri, rootFile);
+      return rootXml(rootURL, rootFile);
     })
     .then(rootXml => {
       const manifest$1 = manifest(rootXml);
@@ -3426,8 +3426,9 @@ function parseEpubBook(uri) {
         id => id === rootXml.package.spine.toc,
       );
       const tocItem = manifest$1.byId[tocManifestId];
-      return tocHtml(uri, tocItem.href, packageDirectory).then(
+      return tocHtml(rootURL, tocItem.href, packageDirectory).then(
         tocHtml => ({
+          rootURL,
           packageDirectory,
           manifest: manifest$1,
           metadata: metadata(rootXml, manifest$1),
@@ -3447,34 +3448,27 @@ function parseEpubBook(uri) {
 
 /**
  * 加载每篇文章
- *
- * @param {String} rootURL
- * @param {String} packageDirectory
- * @param {Object} spine
- * @param {Object} manifest
+ * @param {Epub} epub
  * @param {Number} chapterCount
  * @returns {Promise}
  */
-function loadEpubChapter(
-  rootURL,
-  packageDirectory,
-  spine,
-  manifest,
-  chapterCount,
-) {
+function loadEpubChapter(epub, chapterCount) {
   const fileReg = /('|")[^'|"]*\.(jpg|png|bmp|jpeg|gif|mp3|wma|ogg|3gp|mp4|avi|wmv)\1/gi;
   const srcReg = /src=(?=('|")[^'|"]*\.(jpg|png|gif|bmg|jpeg)\1)/gi;
   const contentLinkReg = /href=["'](.*?)\.(x?)html(#?)(.*?)['"]/gi;
+
+  const { rootURL, packageDirectory, spine, manifest } = epub;
   const chapterPath = manifest.byId[spine.items[chapterCount]].href;
-  return chapterXml(rootURL, chapterPath, packageDirectory).then(
-    chapterText => {
-      let chapterContent = chapterText
-        .replace(/[\r\n]/g, '')
-        .match(/\<body[^\>]*>.*\<\/body\>/i)[0];
-      const rawImgPathList = chapterContent
-        .replace(srcReg, 'src=')
-        .match(fileReg);
+
+  return chapterXml(rootURL, chapterPath, packageDirectory)
+    .then(chapterText => {
+      // prettier-ignore
+      let chapterContent = chapterText.replace(/[\r\n]/g, '').match(/\<body[^\>]*>.*\<\/body\>/i)[0];
       chapterContent = chapterContent.replace(contentLinkReg, '');
+      // prettier-ignore
+      const rawImgPathList = chapterContent.replace(srcReg, 'src=').match(fileReg);
+
+      // img/svg path replace
       if (rawImgPathList && rawImgPathList.length > 0) {
         rawImgPathList.forEach(v => {
           const r = v.replace(/['|"]/g, '');
@@ -3485,41 +3479,45 @@ function loadEpubChapter(
           if (/\<svg/.test(chapterContent)) {
             const svgMatch = /xlink\:href\=\".+\"/;
             if (chapterContent.match(svgMatch)) {
-              const src = chapterContent
-                .match(svgMatch)[0]
-                .replace(/xlink\:href/, 'src');
-              chapterContent = chapterContent.replace(
-                /\<svg (.+)\<\/svg>/,
-                `<img ${src}>`,
-              );
+              // prettier-ignore
+              const src = chapterContent.match(svgMatch)[0].replace(/xlink\:href/, 'src');
+              // prettier-ignore
+              chapterContent = chapterContent.replace(/\<svg (.+)\<\/svg>/,`<img ${src}>`,);
             }
           }
         });
       }
 
-      for (let key in entityMap) {
-        const re = new RegExp('&' + key + ';', 'g');
-        chapterContent = chapterContent.replace(re, entityMap[key]);
-      }
+      return {
+        rawTexts: chapterContent,
+        formatTexts: formatText(chapterContent),
+      };
+    })
+    .catch(err => {
+      throw new Error(err);
+    });
+}
 
-      // add class property
-      chapterContent = chapterContent
-        .replace(/\<a/g, '<a class="bk-epub-href"')
-        .replace(
-          /<img.*?src=(('|")[^'|"]*\.(jpg|png|gif|bmg|jpeg)\2)[^>]*>/gi,
-          '<img class="bk-epub-img" src=$1/>',
-        )
-        .replace(
-          /<(h\d)[^>](.*?)>(.*?)<\/\1>/gi,
-          '<h3 class="bk-epub-title" $2>$3</h3>',
-        )
-        .replace(/\<body/g, '<div class="bk-epub-wrap"')
-        .replace(/\<\/body>/g, '<p>~本章完~</p></div>')
-        .replace(/<p[^>]*>(.*?)<\/p>/gm, '<p class="bk-epub-txt">$1</p>');
-
-      return chapterContent;
-    },
-  );
+function formatText(rawText) {
+  // entity char replace
+  for (let key in entityMap) {
+    const re = new RegExp('&' + key + ';', 'g');
+    rawText = rawText.replace(re, entityMap[key]);
+  }
+  // add class property
+  return rawText
+    .replace(/\<a/g, '<a class="bk-epub-href"')
+    .replace(
+      /<img.*?src=(('|")[^'|"]*\.(jpg|png|gif|bmg|jpeg)\2)[^>]*>/gi,
+      '<img class="bk-epub-img" src=$1/>',
+    )
+    .replace(
+      /<(h\d)[^>](.*?)>(.*?)<\/\1>/gi,
+      '<h3 class="bk-epub-title" $2>$3</h3>',
+    )
+    .replace(/\<body/g, '<div class="bk-epub-wrap"')
+    .replace(/\<\/body>/g, '<p>~本章完~</p></div>')
+    .replace(/<p[^>]*>(.*?)<\/p>/gm, '<p class="bk-epub-txt">$1</p>');
 }
 
 exports.loadEpubChapter = loadEpubChapter;

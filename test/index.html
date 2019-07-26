@@ -26,21 +26,9 @@
         // prettier-ignore
         let chapterCount = 0;
         async function init() {
-          const {
-            spine,
-            manifest,
-            packageDirectory,
-            toc,
-          } = await Epub.parseEpubBook(epubUri);
-          let chapterContent = await Epub.loadEpubChapter(
-            epubUri,
-            packageDirectory,
-            spine,
-            manifest,
-            chapterCount,
-          );
-
-          $epubWrap.innerHTML = chapterContent;
+          const epub = await Epub.parseEpubBook(epubUri);
+          let chapterContent = await Epub.loadEpubChapter(epub, chapterCount);
+          $epubWrap.innerHTML = chapterContent.rawTexts;
         }
         init();
       };
