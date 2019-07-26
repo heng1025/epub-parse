@@ -14,9 +14,6 @@ import {
   tocHtml as fetchTocHtml,
 } from './util/xml-request';
 
-const domParser = new XmlParser({
-  attributePrefix: '',
-});
 /**
  * 解析 .opf文件
  *
@@ -77,9 +74,6 @@ function loadEpubChapter(
   const fileReg = /('|")[^'|"]*\.(jpg|png|bmp|jpeg|gif|mp3|wma|ogg|3gp|mp4|avi|wmv)\1/gi;
   const srcReg = /src=(?=('|")[^'|"]*\.(jpg|png|gif|bmg|jpeg)\1)/gi;
   const contentLinkReg = /href=["'](.*?)\.(x?)html(#?)(.*?)['"]/gi;
-  const splitReg1 = /(\>)([^\>\<]+)(\<)/g;
-  const splitReg2 = /(\<span class\=\'bk_avd\'\>)([^\>\<]+)(\<\/span\>)/g; // just as temp
-  const splitReg3 = /(\<\/span>)([^\>\<]+)(\<)/g;
   const chapterPath = manifest.byId[spine.items[chapterCount]].href;
   return fetchChaterXml(rootURL, chapterPath, packageDirectory).then(
     chapterText => {
@@ -116,7 +110,7 @@ function loadEpubChapter(
         const re = new RegExp('&' + key + ';', 'g');
         chapterContent = chapterContent.replace(re, entityMap[key]);
       }
-    
+
       // add class property
       chapterContent = chapterContent
         .replace(/\<a/g, '<a class="bk-epub-href"')
@@ -131,7 +125,7 @@ function loadEpubChapter(
         .replace(/\<body/g, '<div class="bk-epub-wrap"')
         .replace(/\<\/body>/g, '<p>~本章完~</p></div>')
         .replace(/<p[^>]*>(.*?)<\/p>/gm, '<p class="bk-epub-txt">$1</p>');
-              
+
       return chapterContent;
     },
   );

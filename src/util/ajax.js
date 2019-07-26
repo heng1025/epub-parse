@@ -1,5 +1,5 @@
 const fetch = url => {
-  if (window.wx && wx.request) {
+  if (!window && wx.request) {
     return new Promise((resolve, reject) => {
       wx.request({
         url,
