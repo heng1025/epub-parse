@@ -55,3 +55,10 @@ export function loadEpubChapter(
 | epubUri | container.xm path of epub file |
 
 > reference https://github.com/dariocravero/parse-epub.git
+
+
+## dev
+```
+yarn serve
+yarn watch
+```

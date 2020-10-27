@@ -7,21 +7,12 @@
     <title>parse epub</title>
   </head>
   <body>
-    <div class="e-container" id="epubWrap">test</div>
-    <script src="../../dist/index.umd.js"></script>
+    <div class="e-container" id="epubWrap">loading</div>
+    <div class="btns"></div>
+    <script src="../dist/index.umd.js"></script>
     <script>
       window.onload = () => {
-        const getQueryString = function (urlSearch) {
-          const parseObject = {};
-          const parseAfterList = urlSearch.split('&');
-          parseAfterList.forEach((v) => {
-            const [key, value] = v.split('=');
-            parseObject[key] = value;
-          });
-          return parseObject;
-        };
         const $epubWrap = document.getElementById('epubWrap');
-        const { search } = window.location;
         const epubUri = 'http://epub.bookan.com.cn/epub1/75877/75877-443220/443220_55845788';
         // prettier-ignore
         let chapterCount = 1;
