@@ -19,21 +19,21 @@ const ATTRIBUTES = {
   REQUIRED: ['identifier', 'language', 'title'],
 };
 
-export default function metadata(parsedRootXml, manifest) {
-  const ret = {};
-  const metadataInfo = parsedRootXml.package.metadata;
-  const uniqueIdentifierId = parsedRootXml.package['unique-identifier'];
+export default function metadata(rootXml: any) {
+  const ret: any = {};
+  const metadataInfo = rootXml.package.metadata;
+  const uniqueIdentifierId = rootXml.package['unique-identifier'];
 
-  function attribute(attr, required) {
+  function attribute(attr: string, required: boolean) {
     try {
       const attrInfo = metadataInfo[attr];
       if (Array.isArray(attrInfo)) {
         if (attr === 'identifier') {
           ret[attr] = attrInfo.find(
-            attrItem => attrItem.id === uniqueIdentifierId,
+            (attrItem) => attrItem.id === uniqueIdentifierId,
           ).__text;
         } else {
-          ret[attr] = attrInfo.map(attrItem => attrItem.__text);
+          ret[attr] = attrInfo.map((attrItem) => attrItem.__text);
         }
       } else {
         ret[attr] = attrInfo.__text;
@@ -45,7 +45,7 @@ export default function metadata(parsedRootXml, manifest) {
       }
     }
   }
-  ATTRIBUTES.OPTIONAL.forEach(attr => attribute(attr, false));
-  ATTRIBUTES.REQUIRED.forEach(attr => attribute(attr, true));
+  ATTRIBUTES.OPTIONAL.forEach((attr) => attribute(attr, false));
+  ATTRIBUTES.REQUIRED.forEach((attr) => attribute(attr, true));
   return ret;
 }

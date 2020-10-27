@@ -1,29 +1,35 @@
 {
   "name": "@heng1025/epub-parse",
-  "version": "0.1.1",
+  "version": "0.2",
   "description": "",
   "main": "dist/index.cjs.js",
   "miniprogram": "dist/index.cjs.js",
   "homepage": "https://github.com/heng1025/epub-parse",
   "scripts": {
-    "build": "rollup -c",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "watch": "rollup -c -w",
+    "serve": "serve .",
+    "build": "rollup -c"
   },
-  "files": ["dist/*.js", "index.d.ts"],
-  "keywords": ["epub", "xml"],
+  "files": [
+    "dist/*.js"
+  ],
+  "keywords": [
+    "epub",
+    "xml"
+  ],
   "author": "heng1025",
   "license": "MIT",
-  "dependencies": {
-    "resolve-pathname": "^2.2.0",
-    "x2js": "^3.2.1"
-  },
   "prettier": {
     "trailingComma": "all",
     "singleQuote": true
   },
   "devDependencies": {
-    "rollup": "^1.13.0",
-    "rollup-plugin-commonjs": "^10.0.0",
-    "rollup-plugin-node-resolve": "^5.0.1"
+    "@rollup/plugin-commonjs": "^15.1.0",
+    "@rollup/plugin-node-resolve": "^9.0.0",
+    "@rollup/plugin-typescript": "^6.0.0",
+    "rollup": "^2.32.1",
+    "serve": "^11.3.2",
+    "tslib": "^2.0.3",
+    "typescript": "^4.0.3"
   }
 }
