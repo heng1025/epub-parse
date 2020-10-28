@@ -4,24 +4,211 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>parse epub</title>
+    <title>epub demo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      ul,
+      li {
+        list-style: none;
+      }
+      body {
+        padding: 10px 10px 30px 10px;
+      }
+      .e-container > p {
+        line-height: 1.6;
+        text-indent: 2em;
+      }
+      .loading {
+        width: 100%;
+        height: calc(100vh - 40px);
+        line-height: calc(100vh - 40px);
+        text-align: center;
+      }
+      .btns {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      button {
+        padding: 4px;
+        color: #1608ea;
+        border: none;
+        border-radius: 0;
+        outline: none;
+        cursor: pointer;
+      }
+      .table-btn {
+        margin: 0 20px;
+      }
+      .table {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        display: none;
+        width: 24%;
+        height: calc(100% - 20px);
+        padding: 10px;
+        overflow-y: auto;
+        background-color: #fff;
+      }
+      .table > ul > li {
+        margin-bottom: 4px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .table ul > li > p.active,
+      .table ul > li > p:hover {
+        color: #1608ea;
+      }
+    </style>
   </head>
   <body>
-    <div class="e-container" id="epubWrap">loading</div>
-    <div class="btns"></div>
+    <div class="e-container" id="epubWrap">
+      <div class="loading">loading</div>
+    </div>
+    <div class="btns">
+      <button id="prev">prev</button>
+      <button id="tableBtn" class="table-btn">table of contents</button>
+      <button id="next">next</button>
+    </div>
+    <div id="table" class="table">loading</div>
     <script src="../dist/index.umd.js"></script>
     <script>
       window.onload = () => {
-        const $epubWrap = document.getElementById('epubWrap');
-        const epubUri = 'http://epub.bookan.com.cn/epub1/75877/75877-443220/443220_55845788';
-        // prettier-ignore
-        let chapterCount = 1;
-        async function init() {
-          const epub = await Epub.parseEpubBook(epubUri);
-          let chapterContent = await Epub.loadEpubChapter(epub, chapterCount);
-          $epubWrap.innerHTML = chapterContent.rawTexts;
+        function $(id) {
+          return document.getElementById(id);
         }
-        init();
+
+        function hideTable() {
+          $('table').style.display = 'none';
+        }
+
+        function delayMS(ms = 200) {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve();
+            }, ms);
+          });
+        }
+
+        function genTable(toc, deepness = 0) {
+          let h = '';
+          for (let i = 0, len = toc.length; i < len; i++) {
+            const tocIndex = toc[i].index;
+            let subH = '';
+            if (toc[i].sublevels.length > 0) {
+              subH = genTable(toc[i].sublevels, deepness + 1);
+            }
+            const className = tocIndex === chapterCount ? 'active' : '';
+            const title = `<p data-index=${tocIndex} class=${className}>${toc[i].name}</p>`;
+            h += `<li>${title}${subH}</li>`;
+            level = 0;
+          }
+          return `<ul style="padding-left: ${deepness * 20}px">${h}</ul>`;
+        }
+        const $epubWrap = $('epubWrap');
+        // prettier-ignore
+        const epubUri = 'http://epub.bookan.com.cn/epub1/75877/75877-443220/443220_55845788';
+
+        function Book() {
+          let book;
+          return {
+            getBook: async function () {
+              if (!book) {
+                book = await Epub.parseEpubBook(epubUri);
+              }
+              return book;
+            },
+          };
+        }
+
+        const book = new Book();
+        let chapterCount = 0;
+        async function load(count) {
+          chapterCount = count;
+          const epub = await book.getBook();
+          let chapterContent = '';
+          const getChapter = async () => {
+            const content = await Epub.loadEpubChapter(epub, chapterCount);
+            chapterContent = content;
+            return content;
+          };
+          hideTable();
+
+          const result = await Promise.race([delayMS(300), getChapter()]);
+          if (result) {
+            $epubWrap.innerHTML = result.rawTexts;
+          } else {
+            $epubWrap.innerHTML = '<div class="loading">loading</div>';
+            let timer = null;
+            let count = 0;
+            clearInterval(timer);
+            timer = setInterval(() => {
+              count += 1;
+              // 10s
+              if (count < 100) {
+                if (chapterContent) {
+                  clearInterval(timer);
+                  count = 0;
+                  $epubWrap.innerHTML = chapterContent.rawTexts;
+                }
+              } else {
+                clearInterval(timer);
+                count = 0;
+                $epubWrap.innerHTML = '<div class="loading">~error~</div>';
+              }
+            }, 100);
+          }
+        }
+
+        load(chapterCount);
+
+        $('prev').addEventListener('click', () => {
+          if (chapterCount > 0) {
+            chapterCount--;
+            load(chapterCount);
+          } else {
+            alert('~first chapter~');
+          }
+        });
+
+        $('next').addEventListener('click', async () => {
+          const { totalChapter } = await book.getBook();
+          if (chapterCount < totalChapter - 1) {
+            chapterCount++;
+            load(chapterCount);
+          } else {
+            alert('~last chapter,over~');
+          }
+        });
+
+        $('tableBtn').addEventListener('click', async (e) => {
+          e.stopPropagation();
+          $('table').style.display = 'block';
+          const { toc } = await book.getBook();
+          $('table').innerHTML = genTable(toc, 0);
+        });
+
+        $('table').addEventListener('click', async (e) => {
+          if (e.target.tagName === 'P') {
+            const index = e.target.getAttribute('data-index');
+            await load(+index);
+          }
+        });
+
+        document.addEventListener('click', (e) => {
+          const isTableVisible = $('table').style.display === 'block';
+          if (isTableVisible && !$('table').contains(e.target)) {
+            hideTable();
+          }
+        });
       };
     </script>
   </body>

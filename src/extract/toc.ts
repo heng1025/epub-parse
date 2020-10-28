@@ -7,7 +7,7 @@ export interface Toc {
   name: string;
   href: string;
   isLeaf: boolean;
-  tocIndex: number;
+  index: number;
   sublevels: Toc[];
 }
 
@@ -18,7 +18,7 @@ export default function toc(tocHtml: any, manifest: Manifest, spine: Spine) {
     id: '',
     isLeaf: false,
     href: '',
-    tocIndex: 0,
+    index: 0,
     name: '',
   };
   parse(tocItem, tocHtml.ncx.navMap.navPoint);
@@ -42,7 +42,7 @@ export default function toc(tocHtml: any, manifest: Manifest, spine: Spine) {
         id: val.id,
         isLeaf: false,
         href: val.content.src,
-        tocIndex,
+        index: tocIndex,
         name: tocName,
       };
       parent.isLeaf = true;

@@ -25,11 +25,11 @@ interface Epub {
   spine: Spine;
   manifest: Manifest;
   packageDirectory: string;
+  totalChapter: number;
 }
 
 async function parseEpubBook(containerPath: string): Promise<Epub> {
   const container = await fetchContainerXml(containerPath);
-  console.log('container', container);
   const rootFilePath = extractRootFile(container);
   const packageDirectory = getDirname(rootFilePath);
   const rootFile = await fetchRootXml(containerPath, rootFilePath);
@@ -45,6 +45,7 @@ async function parseEpubBook(containerPath: string): Promise<Epub> {
     manifest,
     metadata,
     spine,
+    totalChapter: spine.items.length,
   };
   if (tocManifestId) {
     const tocItem = manifest.byId[tocManifestId];
