@@ -1,6 +1,6 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import typescript from '@rollup/plugin-typescript';
+import typescript from 'rollup-plugin-typescript2';
 
 export default {
   input: 'src/index.ts',
@@ -13,7 +13,7 @@ export default {
       file: 'dist/index.umd.js',
       name: 'Epub',
       format: 'umd',
-      sourcemap: true,
+      // sourcemap: true,
     },
   ],
   plugins: [resolve(), commonjs(), typescript()],
