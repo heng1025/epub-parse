@@ -59,6 +59,6 @@ export function loadEpubChapter(
 
 ## dev
 ```
-yarn serve
+yarn demo
 yarn watch
 ```

@@ -7,9 +7,15 @@
     "noImplicitAny": true,
     "removeComments": true,
     "declaration": true,
+    "declarationDir": "./types",
     "moduleResolution": "Node",
     "preserveConstEnums": true,
-    "sourceMap": true
+    "sourceMap": false
   },
-  "include": ["./src/**/*.ts"]
+  "include": [
+    "./src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

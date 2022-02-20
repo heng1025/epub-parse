@@ -93,7 +93,7 @@ function loadEpubChapter(
         rawImgPathList.forEach((v: string) => {
           const r = v.replace(/['|"]/g, '');
           // prettier-ignore
-          const absImgPath = resolvePathname(r,`/${packageDirectory}/${chapterPath}`,);
+          const absImgPath = resolvePathname(r, `/${packageDirectory}/${chapterPath}`,);
           chapterContent = chapterContent.replace(r, `${rootURL}${absImgPath}`);
           // svg
           if (/\<svg/.test(chapterContent)) {
@@ -102,7 +102,7 @@ function loadEpubChapter(
               // prettier-ignore
               const src = chapterContent.match(svgMatch)[0].replace(/xlink\:href/, 'src');
               // prettier-ignore
-              chapterContent = chapterContent.replace(/\<svg (.+)\<\/svg>/,`<img ${src}>`,);
+              chapterContent = chapterContent.replace(/\<svg (.+)\<\/svg>/, `<img ${src}>`,);
             }
           }
         });

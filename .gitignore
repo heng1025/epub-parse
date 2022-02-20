@@ -6,6 +6,7 @@ dist/
 /test/e2e/reports
 selenium-debug.log
 
+temp/
 # Editor directories and files
 .idea
 *.suo
